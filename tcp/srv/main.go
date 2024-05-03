@@ -54,7 +54,7 @@ func main() {
 }
 
 func handleClient(conn net.Conn, errs chan error) {
-	defer conn.Close()
+	defer conn.Close() // remove and add msg delineation between srv and cli
 
 	buf := make([]byte, 1024)
 	if _, err := conn.Read(buf); err != nil {
