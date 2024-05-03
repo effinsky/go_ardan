@@ -57,8 +57,7 @@ func handleClient(conn net.Conn, errs chan error) {
 	defer conn.Close()
 
 	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
-	if err != nil {
+	if _, err := conn.Read(buf); err != nil {
 		errs <- err
 		return
 	}
@@ -66,9 +65,9 @@ func handleClient(conn net.Conn, errs chan error) {
 	req := string(buf)
 	log.Printf("Received request: %s", req)
 
-	resp := []byte(randResp())
-	_, err = conn.Write(resp)
-	if err != nil {
+	// This is where I could use a pipe operator. Assuming type conv is a func,
+	// randResp() |> []byte |> conn.Write
+	if _, err := conn.Write([]byte(randResp())); err != nil {
 		errs <- err
 		return
 	}
