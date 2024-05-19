@@ -37,3 +37,21 @@ package main
 
 // manage data races with : atomics for simple values like counters; mutexes for more
 // complex data. consider rwmutex when necessary
+
+// PANIC vs FATAL
+// log.Panic allows deferred functions to execute and can be recovered from,
+// while log.Fatal calls os.Exit and crashes the program irrecoverably and does
+// not execute deferred functions.
+
+// HANDLING ERRORS WITH DEFER FOR CLEANUPS, ROLLBACKS, AND SUCH:
+//
+// When a function encounters a return statement, the defer functions are
+// called before the function actually returns but after the return values are
+// calculated. Here's the catch: if you're using a locally scoped error variable,
+// the defer function will see the value of err at the point in the code where
+// defer is defined, not the value of err that is being returned.
+// On the other hand, if err is a named return, it will be in the scope of the
+// entire function. So, the value of err inside the defer would be the value that
+// is going to be returned by the function, because the defer function executes
+// after the return values (named return variables) have been calculated but
+// before the function actually returns.

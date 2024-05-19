@@ -226,3 +226,40 @@ func Cancellation() {
 	fmt.Printf("sending shutdown signal\n")
 	fmt.Println("---------------------------------------------------")
 }
+
+// RunWorker with stop func
+func RunWorker(process func(int, time.Time) error) func() {
+	const (
+		estimatedCheckFreq time.Duration = time.Second * 5
+		checkSelectLimit   int           = 50
+		shutdownTimeout    time.Duration = time.Second * 15
+	)
+
+	ticker := time.NewTicker(estimatedCheckFreq)
+	processStopCh := make(chan chan struct{}, 1)
+	go func() {
+		for {
+			select {
+			case now := <-ticker.C:
+				if err := process(checkSelectLimit, now); err != nil {
+					fmt.Printf("Failed to run check: %v", err)
+				}
+			case ret := <-processStopCh:
+				close(ret)
+				return
+			}
+		}
+	}()
+
+	return func() {
+		ticker.Stop()
+		ret := make(chan struct{})
+		processStopCh <- ret
+		select {
+		case <-time.After(shutdownTimeout):
+			fmt.Printf("Failed to gracefully stop check worker\n")
+		case <-ret:
+			fmt.Printf("Gracefully stopped check worker\n")
+		}
+	}
+}
