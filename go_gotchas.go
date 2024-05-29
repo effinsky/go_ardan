@@ -4,11 +4,14 @@ package main
 // 1 nil in Go actually has a type. and it assumes the type of pointer it needs
 // when assigned (internally). nil in Go can be a "concretely typed value",
 // var i *int, for instance. You can imagine it as if every value in the language
-// instead of being just the value is actually a tuple tuple (Type, Value).
+// instead of being just the value is actually a tuple (Type, Value).
 // and then sometimes nil is just (nil, nil)
 
 // 2 calling methods on nil pointers is fine, since they get promoted to a value
-// of the type to which they point (they carry a pointer to the type)
+// of the type to which they point (they carry a pointer to the type). also
+// methods are just sugar over functions that that the receiver as the first
+// arg, really. so it's like a function that accepts a nil as the first arg --
+// acceptable.
 
 // 3 types based on other types and values of those types passed to funcs/meths
 // as base and derived types -- so a type based on another type is derived from it
@@ -18,7 +21,6 @@ package main
 
 // 5 returning concrete error types from func will create bugs when checking err
 // vs nil!
-
 // 6 we get npds when doing dot access on nil pointers because go automatically
 // dereferences these pointers to values, and they do not point to any valid memory.
 
@@ -33,10 +35,12 @@ package main
 // hardware thread -> os thread -> goroutine
 
 // opportunities for go scheduler context switching among goroutines :
-// go keyword used; GC happening; syscalls; clocking calls in the program (mutexes etc)
+// go keyword used; GC happening; syscalls; clocking calls in the program
+// (mutexes etc)
 
-// manage data races with : atomics for simple values like counters; mutexes for more
-// complex data. consider rwmutex when necessary
+// manage data races with :
+// -- atomics for simple values like counters;
+// -- mutexes for more complex data. consider rwmutex when necessary
 
 // PANIC vs FATAL
 // log.Panic allows deferred functions to execute and can be recovered from,
@@ -47,11 +51,14 @@ package main
 //
 // When a function encounters a return statement, the defer functions are
 // called before the function actually returns but after the return values are
-// calculated. Here's the catch: if you're using a locally scoped error variable,
-// the defer function will see the value of err at the point in the code where
-// defer is defined, not the value of err that is being returned.
+// computed. Ok, so you have the values computed for the returns. But here's
+// the catch: the defer funcs cannot see that state of the values.
+// if you're using a locally scoped error variable, the defer funcs will see
+// the value of err at the point in the code where the defer func is defined,
+// not the value of err that is being returned.
+//
 // On the other hand, if err is a named return, it will be in the scope of the
 // entire function. So, the value of err inside the defer would be the value that
 // is going to be returned by the function, because the defer function executes
-// after the return values (named return variables) have been calculated but
+// after the return values (named return variables) have been computed but
 // before the function actually returns.

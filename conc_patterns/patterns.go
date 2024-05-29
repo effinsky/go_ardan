@@ -227,7 +227,7 @@ func Cancellation() {
 	fmt.Println("---------------------------------------------------")
 }
 
-// RunWorker with stop func
+// RunWorker with a stop func
 func RunWorker(process func(int, time.Time) error) func() {
 	const (
 		estimatedCheckFreq time.Duration = time.Second * 5

@@ -1,9 +1,5 @@
 package main
 
-import (
-	conc "ardan/conc_patterns"
-)
-
 func main() {
 	// conc.SyncWithMutex()
 	// conc.WaitForResult()
@@ -12,5 +8,5 @@ func main() {
 	// conc.FanOutSemaphore()
 	// conc.FanOutBounded()
 	// conc.Drop()
-	conc.Cancellation()
+	// conc.Cancellation()
 }
