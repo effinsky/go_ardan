@@ -63,10 +63,10 @@ func WaitForResult() {
 }
 
 func FanOut() {
-	emps := 2000
-	ch := make(chan string, emps)
+	workers := 2000
+	ch := make(chan string, workers)
 
-	for e := range emps {
+	for e := range workers {
 		go func(emp int) {
 			time.Sleep(time.Duration(rand.Intn(200) * int(time.Millisecond)))
 			ch <- "paper"
@@ -74,11 +74,11 @@ func FanOut() {
 		}(e)
 	}
 
-	for emps > 0 {
+	for workers > 0 {
 		p := <-ch
-		emps--
+		workers--
 		fmt.Printf("p: %v\n", p)
-		fmt.Printf("received signal: %v\n", emps)
+		fmt.Printf("received signal: %v\n", workers)
 	}
 
 	time.Sleep(time.Second)
@@ -95,12 +95,12 @@ func FanOutSemaphore() {
 	for w := range workers {
 		go func() {
 			sem <- true
-			{
-				time.Sleep(time.Duration(rand.Intn(200) * int(time.Millisecond)))
-				ch <- "paper"
-				// capture that loop variable
-				fmt.Println("worker : signal sent: ", w)
-			}
+
+			time.Sleep(time.Duration(rand.Intn(200) * int(time.Millisecond)))
+			ch <- "paper"
+			// capture that loop variable
+			fmt.Println("worker : signal sent: ", w)
+
 			<-sem
 		}()
 	}
@@ -227,8 +227,8 @@ func Cancellation() {
 	fmt.Println("---------------------------------------------------")
 }
 
-// RunWorker with a stop func
-func RunWorker(process func(int, time.Time) error) func() {
+// RunWorkerWithStop with a stop func
+func RunWorkerWithStop(process func(int, time.Time) error) func() {
 	const (
 		estimatedCheckFreq time.Duration = time.Second * 5
 		checkSelectLimit   int           = 50
@@ -237,6 +237,7 @@ func RunWorker(process func(int, time.Time) error) func() {
 
 	ticker := time.NewTicker(estimatedCheckFreq)
 	processStopCh := make(chan chan struct{}, 1)
+
 	go func() {
 		for {
 			select {
